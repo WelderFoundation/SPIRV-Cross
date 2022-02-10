@@ -1835,9 +1835,15 @@ string CompilerGLSL::layout_for_variable(const SPIRVariable &var)
 	// GL 3.0/GLSL 1.30 is not considered legacy, but it doesn't have UBOs ...
 	bool can_use_buffer_blocks = (options.es && options.version >= 300) || (!options.es && options.version >= 140);
 
-	// pretend no UBOs when options say so
+    // pretend no UBOs when options say so
 	if (ubo_block && options.emit_uniform_buffer_as_plain_uniforms)
+        can_use_buffer_blocks = false;
+    
+	//+WELDER
+	// Force legacy until renderer implements uniform buffers.
+	if (options.force_legacy)
 		can_use_buffer_blocks = false;
+	//-WELDER
 
 	bool can_use_binding;
 	if (options.es)
@@ -2001,8 +2007,17 @@ void CompilerGLSL::emit_push_constant_block_glsl(const SPIRVariable &var)
 
 void CompilerGLSL::emit_buffer_block(const SPIRVariable &var)
 {
-	auto &type = get<SPIRType>(var.basetype);
+    auto &type = get<SPIRType>(var.basetype);
 	bool ubo_block = var.storage == StorageClassUniform && has_decoration(type.self, DecorationBlock);
+    
+	//+WELDER
+	// Force legacy until renderer implements uniform buffers.
+	if (options.force_legacy)
+	{
+		emit_buffer_block_legacy(var);
+		return;
+	}
+	//-WELDER
 
 	if (flattened_buffer_blocks.count(var.self))
 		emit_buffer_block_flattened(var);
