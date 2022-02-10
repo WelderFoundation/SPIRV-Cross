@@ -74,6 +74,11 @@ public:
 		// Debug option to always emit temporary variables for all expressions.
 		bool force_temporary = false;
 
+    //+WELDER
+		// Required until we updates to use uniform buffers.
+		bool force_legacy = false;
+    //-WELDER
+
 		// If true, Vulkan GLSL features are used instead of GL-compatible features.
 		// Mostly useful for debugging SPIR-V files.
 		bool vulkan_semantics = false;
